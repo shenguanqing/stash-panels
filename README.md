@@ -1,6 +1,6 @@
 # stash-panels
 
-适用于 [Stash](https://stash.ws) 的流媒体与 AI 服务连通性检测面板脚本集合。
+适用于 [Stash](https://stash.ws) / Surge 的流媒体与 AI 服务连通性检测面板脚本集合。
 
 ---
 
@@ -20,13 +20,12 @@
 
 ## 使用方法
 
-在 Stash 中通过订阅链接一键导入：
+复制以下链接，在 Stash 覆写配置中新建远程覆写并粘贴：
 
 ```
 https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/panel.stoverride
 ```
 
-或在覆写配置中手动填写该订阅地址，Stash 会自动拉取面板配置及所有脚本。
 
 ---
 
