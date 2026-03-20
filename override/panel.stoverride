@@ -1,4 +1,5 @@
-name: 🌐 连通性检测面板2
+#SUBSCRIBED https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/panel.stoverride
+name: 🌐 连通性检测面板
 desc: 流媒体解锁 / AI 服务
 category: Custom
 
