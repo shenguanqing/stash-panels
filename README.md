@@ -1,6 +1,6 @@
 # stash-panels
 
-适用于 [Stash](https://stash.ws) / Surge 的流媒体与 AI 服务连通性检测面板脚本集合。
+适用于 [Stash](https://stash.ws) 的流媒体与 AI 服务连通性检测面板脚本集合。
 
 ---
 
@@ -9,7 +9,7 @@
 | 服务 | 检测内容 | 示例输出 |
 |------|---------|---------|
 | Apple | 落地区域 | `🇺🇸US` |
-| Netflix | 完整解锁 / 自制剧 / 不可用 | `已完整解锁，🇺🇸US` |
+| Netflix | 已完整解锁 / 自制剧 / 不可用 | `已完整解锁，🇺🇸US` |
 | Disney+ | 已解锁 / 即将登陆 / 不可用 | `已解锁，🇭🇰HK` |
 | YouTube | Premium 可用区域 | `已解锁，🇯🇵JP` |
 | Bilibili | 港澳台解锁状态 | `已解锁，🇹🇼TW` |
@@ -52,8 +52,3 @@ https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/over
 - 若各平台调整接口导致脚本失效，作者不保证及时更新与维护。
 - 请在**合法合规**的前提下使用，并遵守所在地区的相关法律法规及各平台服务条款。
 
----
-
-## License
-
-[MIT](./LICENSE)
