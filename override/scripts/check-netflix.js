@@ -3,34 +3,58 @@
  * 检测当前节点能否访问 Netflix，并识别可用区域
  */
 
-const url = 'https://www.netflix.com/title/81215567';
+var $httpClient, $done;
 
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept-Language': 'en-US,en;q=0.9',
-};
+async function request(method, params) {
+    return new Promise((resolve, reject) => {
+        $httpClient[method.toLowerCase()](params, (error, response, data) => {
+            if (error) reject({ error, response, data });
+            else resolve({ error, response, data });
+        });
+    });
+}
 
-$httpClient.get({ url, headers, timeout: 10 }, (error, response) => {
-  if (error || !response) {
-    $done({ title: 'Netflix', content: '❌ 连接失败', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-    return;
-  }
+async function get(params) {
+    return request('GET', typeof params === 'string' ? { url: params } : params);
+}
 
-  const status = response.status;
-  const body = response.body || '';
+function countryCodeToEmoji(code) {
+    if (!code) return '';
+    code = code.toUpperCase().slice(0, 2);
+    return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+}
 
-  if (status === 200) {
-    // 尝试从响应中提取地区信息
+async function parseNetflix() {
+    const [res1, res2] = await Promise.allSettled([
+        get('https://www.netflix.com/title/81215567'),
+        get('https://www.netflix.com/title/70143836'),
+    ]);
+
+    const r1 = res1.status === 'fulfilled' ? res1.value : null;
+    const r2 = res2.status === 'fulfilled' ? res2.value : null;
+
+    if (!r1 && !r2) return '连接失败';
+
+    const status1 = r1?.response?.status;
+    const status2 = r2?.response?.status;
+    const body = r1?.data || r2?.data || '';
+
     const regionMatch = body.match(/"requestCountry"\s*:\s*"([A-Z]{2})"/);
-    const region = regionMatch ? regionMatch[1] : '';
-    const label = region ? `✅ 完整解锁 [${region}]` : '✅ 完整解锁';
-    $done({ title: 'Netflix', content: label, icon: 'play.circle.fill', 'icon-color': '#e50914' });
-  } else if (status === 403 || status === 451) {
-    $done({ title: 'Netflix', content: '🚫 仅自制剧', icon: 'minus.circle', 'icon-color': '#e67e22' });
-  } else if (status === 404) {
-    // 404 通常意味着有访问权但内容不可用（自制剧可看）
-    $done({ title: 'Netflix', content: '⚠️ 仅自制剧', icon: 'minus.circle', 'icon-color': '#e67e22' });
-  } else {
-    $done({ title: 'Netflix', content: `❌ 不可用 (${status})`, icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  }
-});
+    const region = regionMatch ? regionMatch[1] : null;
+    const regionLabel = region ? `，${countryCodeToEmoji(region)}${region}` : '';
+
+    if (status1 === 200) return `已完整解锁${regionLabel}`;
+    if (status2 === 200) return `仅自制剧${regionLabel}`;
+    if (status1 === 403 || status1 === 451) return '不可用';
+    return '连接失败';
+}
+
+(async () => {
+    try {
+        const content = await parseNetflix();
+        $done({ content });
+    } catch (e) {
+        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
+    }
+})();

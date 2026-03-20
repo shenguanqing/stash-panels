@@ -3,60 +3,92 @@
  * 检测是否能访问 OpenAI 服务，以及是否支持 API 访问
  */
 
-const urlWeb = 'https://chat.openai.com/';
-const urlIos = 'https://ios.chat.openai.com/';
-const urlApi = 'https://api.openai.com/v1/models';
+var $httpClient, $done;
 
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-};
-
-let done = 0;
-let webOk = false;
-let apiOk = false;
-let blocked = false;
-
-function finish() {
-  done++;
-  if (done < 2) return;
-
-  if (blocked) {
-    $done({ title: 'ChatGPT', content: '🚫 所在地区不支持', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  } else if (webOk && apiOk) {
-    $done({ title: 'ChatGPT', content: '✅ Web + API 均可用', icon: 'bubble.left.fill', 'icon-color': '#10a37f' });
-  } else if (webOk) {
-    $done({ title: 'ChatGPT', content: '✅ Web 可访问', icon: 'bubble.left', 'icon-color': '#10a37f' });
-  } else if (apiOk) {
-    $done({ title: 'ChatGPT', content: '✅ API 可访问', icon: 'network', 'icon-color': '#10a37f' });
-  } else {
-    $done({ title: 'ChatGPT', content: '❌ 连接失败', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  }
+async function request(method, params) {
+    return new Promise((resolve, reject) => {
+        $httpClient[method.toLowerCase()](params, (error, response, data) => {
+            if (error) reject({ error, response, data });
+            else resolve({ error, response, data });
+        });
+    });
 }
 
-// 检测网页端
-$httpClient.get({ url: urlWeb, headers, timeout: 10 }, (error, response) => {
-  if (!error && response) {
-    const body = response.body || '';
-    const status = response.status;
-    if (status === 403 || body.includes('not available') || body.includes('VPN')) {
-      blocked = true;
-    } else if (status === 200 || status === 302) {
-      webOk = true;
-    }
-  }
-  finish();
-});
+async function get(params) {
+    return request('GET', typeof params === 'string' ? { url: params } : params);
+}
 
-// 检测 API 端（未授权返回 401 说明可达，403/blocked 说明地区限制）
-$httpClient.get({ url: urlApi, headers, timeout: 10 }, (error, response) => {
-  if (!error && response) {
-    const status = response.status;
-    // 401 = 无 key 但服务可达; 200 = 完全可用
-    if (status === 200 || status === 401) {
-      apiOk = true;
-    } else if (status === 403) {
-      blocked = true;
+function countryCodeToEmoji(code) {
+    if (!code) return '';
+    code = code.toUpperCase().slice(0, 2);
+    return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+}
+
+// 获取节点落地区域（与参考脚本一致）
+async function getChatGPTCountryCode() {
+    const res = await get('https://chat.openai.com/cdn-cgi/trace').catch(() => null);
+    if (!res || typeof res.data !== 'string') return null;
+
+    const map = {};
+    res.data.split('\n').forEach(line => {
+        const idx = line.indexOf('=');
+        if (idx !== -1) map[line.slice(0, idx)] = line.slice(idx + 1);
+    });
+
+    const loc = map['loc'];
+    return loc ? loc.trim() : null;
+}
+
+// 检测 Web 是否可用（与参考脚本一致）
+async function parseChatGPTWeb() {
+    const res = await get('https://api.openai.com/compliance/cookie_requirements').catch(() => null);
+    if (!res || typeof res.data !== 'string') return 'failed';
+    if (res.data.toLowerCase().includes('unsupported_country')) return 'unsupported';
+    return 'ok';
+}
+
+// 检测 iOS 端是否可用（与参考脚本一致）
+async function parseChatGPTiOS() {
+    const res = await get('https://ios.chat.openai.com/').catch(() => null);
+    if (!res || typeof res.data !== 'string') return 'failed';
+    const body = res.data.toLowerCase();
+    if (body.includes('you may be connected to a disallowed isp')) return 'disallowed';
+    if (body.includes('request is not allowed')) return 'ok';
+    if (body.includes('sorry, you have been blocked')) return 'blocked';
+    return 'failed';
+}
+
+async function parseChatGPT() {
+    const [locRes, webRes, iosRes] = await Promise.allSettled([
+        getChatGPTCountryCode(),
+        parseChatGPTWeb(),
+        parseChatGPTiOS(),
+    ]);
+
+    const loc = locRes.status === 'fulfilled' ? locRes.value : null;
+    const web = webRes.status === 'fulfilled' ? webRes.value : 'failed';
+    const ios = iosRes.status === 'fulfilled' ? iosRes.value : 'failed';
+
+    const regionLabel = loc ? `，${countryCodeToEmoji(loc)}${loc}` : '';
+
+    if (web === 'unsupported') return `不可用${regionLabel}`;
+    if (ios === 'disallowed') return `ISP 不支持${regionLabel}`;
+    if (ios === 'blocked') return `已封锁${regionLabel}`;
+
+    const parts = [];
+    if (web === 'ok') parts.push('Web');
+    if (ios === 'ok') parts.push('iOS');
+
+    if (parts.length > 0) return `${parts.join(' + ')} 可用${regionLabel}`;
+    return `连接失败${regionLabel}`;
+}
+
+(async () => {
+    try {
+        const content = await parseChatGPT();
+        $done({ content });
+    } catch (e) {
+        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
     }
-  }
-  finish();
-});
+})();

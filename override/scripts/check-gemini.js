@@ -3,70 +3,59 @@
  * 检测是否能访问 Gemini Web 及 API 服务
  */
 
-const urlWeb = 'https://gemini.google.com/';
-const urlApi = 'https://generativelanguage.googleapis.com/v1beta/models';
+var $httpClient, $done;
 
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept-Language': 'en-US,en;q=0.9',
-};
-
-let done = 0;
-let webOk = false;
-let apiOk = false;
-let blocked = false;
-let region = '';
-
-function finish() {
-  done++;
-  if (done < 2) return;
-
-  if (blocked) {
-    $done({ title: 'Gemini', content: '🚫 所在地区不支持', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  } else if (webOk || apiOk) {
-    const access = [];
-    if (webOk) access.push('Web');
-    if (apiOk) access.push('API');
-    const regionLabel = region ? ` [${region}]` : '';
-    $done({
-      title: 'Gemini',
-      content: `✅ ${access.join(' + ')} 可用${regionLabel}`,
-      icon: 'sparkles',
-      'icon-color': '#1a73e8',
+async function request(method, params) {
+    return new Promise((resolve, reject) => {
+        $httpClient[method.toLowerCase()](params, (error, response, data) => {
+            if (error) reject({ error, response, data });
+            else resolve({ error, response, data });
+        });
     });
-  } else {
-    $done({ title: 'Gemini', content: '❌ 连接失败', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  }
 }
 
-// 检测网页端
-$httpClient.get({ url: urlWeb, headers, timeout: 10 }, (error, response) => {
-  if (!error && response) {
-    const body = response.body || '';
-    const status = response.status;
+async function get(params) {
+    return request('GET', typeof params === 'string' ? { url: params } : params);
+}
 
-    // 提取地区
-    const regionMatch = body.match(/"countryCode"\s*:\s*"([A-Z]{2})"/);
-    if (regionMatch) region = regionMatch[1];
+function countryCodeToEmoji(code) {
+    if (!code) return '';
+    const threeToTwo = { 'USA': 'US', 'CAN': 'CA', 'GBR': 'GB', 'FRA': 'FR', 'DEU': 'DE', 'KOR': 'KR' };
+    code = code.toUpperCase();
+    if (code.length === 3) code = threeToTwo[code] || code.slice(0, 2);
+    return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+}
 
-    if (status === 200 && !body.includes('not available') && !body.includes('unavailable')) {
-      webOk = true;
-    } else if (status === 403 || body.includes('not available in your country')) {
-      blocked = true;
+// 与参考脚本完全一致的解析逻辑
+async function parseGemini() {
+    const res = await get('https://gemini.google.com').catch(() => null);
+
+    if (!res || typeof res.data !== 'string') return '连接失败';
+
+    const isOk = res.data.includes('45631641,null,true');
+    const result = isOk ? '已解锁' : '不可用';
+
+    const regex = /,2,1,200,"([A-Z]{3})"/;
+    const match = res.data.match(regex);
+
+    if (match) {
+        const countrycode = match[1];
+        const emoji = countryCodeToEmoji(countrycode);
+        // 转为两位代码用于显示
+        const threeToTwo = { 'USA': 'US', 'CAN': 'CA', 'GBR': 'GB', 'FRA': 'FR', 'DEU': 'DE', 'KOR': 'KR' };
+        const twoCode = threeToTwo[countrycode] || countrycode.slice(0, 2);
+        return `${result}，${emoji}${twoCode}`;
     }
-  }
-  finish();
-});
 
-// 检测 API 端（401 = 无 key 但可达）
-$httpClient.get({ url: urlApi, headers, timeout: 10 }, (error, response) => {
-  if (!error && response) {
-    const status = response.status;
-    if (status === 200 || status === 400 || status === 401) {
-      apiOk = true;
-    } else if (status === 403) {
-      // 403 可能是地区块，但也可能是 key 问题，不直接标记为 blocked
+    return result;
+}
+
+(async () => {
+    try {
+        const content = await parseGemini();
+        $done({ content });
+    } catch (e) {
+        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
     }
-  }
-  finish();
-});
+})();

@@ -3,40 +3,53 @@
  * 检测节点是否可访问 YouTube 并识别 Premium 可用区域
  */
 
-const url = 'https://www.youtube.com/premium';
+var $httpClient, $done;
 
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept-Language': 'en-US,en;q=0.9',
-};
+async function request(method, params) {
+    return new Promise((resolve, reject) => {
+        $httpClient[method.toLowerCase()](params, (error, response, data) => {
+            if (error) reject({ error, response, data });
+            else resolve({ error, response, data });
+        });
+    });
+}
 
-$httpClient.get({ url, headers, timeout: 10 }, (error, response) => {
-  if (error || !response) {
-    $done({ title: 'YouTube', content: '❌ 连接失败', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-    return;
-  }
+async function get(params) {
+    return request('GET', typeof params === 'string' ? { url: params } : params);
+}
 
-  const status = response.status;
-  const body = response.body || '';
+function countryCodeToEmoji(code) {
+    if (!code) return '';
+    code = code.toUpperCase().slice(0, 2);
+    return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+}
 
-  if (status !== 200) {
-    $done({ title: 'YouTube', content: `❌ 不可用 (${status})`, icon: 'xmark.circle', 'icon-color': '#c0392b' });
-    return;
-  }
+// 与参考脚本保持一致的解析逻辑
+async function parseYoutubePremium() {
+    const res = await get('https://www.youtube.com/premium').catch(() => null);
 
-  // 提取区域信息
-  const regionMatch = body.match(/"countryCode"\s*:\s*"([A-Z]{2})"/);
-  const region = regionMatch ? regionMatch[1] : '';
+    if (!res || typeof res.data !== 'string') return '连接失败';
 
-  // 判断 Premium 是否可用
-  const hasPremium = body.includes('Premium') && !body.includes('not available in your country');
+    if (res.data.toLowerCase().includes('YouTube Premium is not available in your country'.toLowerCase())) {
+        return '不可用';
+    }
 
-  if (hasPremium && region) {
-    $done({ title: 'YouTube', content: `✅ Premium 可用 [${region}]`, icon: 'play.rectangle.fill', 'icon-color': '#ff0000' });
-  } else if (hasPremium) {
-    $done({ title: 'YouTube', content: '✅ Premium 可用', icon: 'play.rectangle.fill', 'icon-color': '#ff0000' });
-  } else {
-    const label = region ? `⚠️ 仅基础访问 [${region}]` : '⚠️ 仅基础访问';
-    $done({ title: 'YouTube', content: label, icon: 'play.rectangle', 'icon-color': '#e67e22' });
-  }
-});
+    if (res.data.toLowerCase().includes('ad-free')) {
+        const match = res.data.match(/"GL":\s?"(\w+)"/);
+        const region = match ? match[1] : null;
+        const regionLabel = region ? `，${countryCodeToEmoji(region)}${region}` : '';
+        return `已解锁${regionLabel}`;
+    }
+
+    return '连接失败';
+}
+
+(async () => {
+    try {
+        const content = await parseYoutubePremium();
+        $done({ content });
+    } catch (e) {
+        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
+    }
+})();

@@ -3,55 +3,73 @@
  * 检测是否可访问港澳台限定内容
  */
 
-// 使用一个港澳台限定番剧 ep 作为测试
-// EP 332215 为「进击的巨人」港澳台版本
-const urlHK = 'https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&session=&module=bangumi';
+var $httpClient, $done;
 
-const urlTW = 'https://api.bilibili.com/pgc/player/web/playurl?avid=50762638&cid=88970773&qn=0&type=&otype=json&ep_id=268176&fourk=1&fnver=0&fnval=16&session=&module=bangumi';
-
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-  'Referer': 'https://www.bilibili.com',
-};
-
-let results = {};
-let done = 0;
-
-function finish() {
-  done++;
-  if (done < 2) return;
-
-  const hkOk = results.hk;
-  const twOk = results.tw;
-
-  if (hkOk && twOk) {
-    $done({ title: 'Bilibili', content: '✅ 港澳台全解锁', icon: 'tv.fill', 'icon-color': '#00a1d6' });
-  } else if (hkOk) {
-    $done({ title: 'Bilibili', content: '✅ 港澳门解锁', icon: 'tv', 'icon-color': '#00a1d6' });
-  } else if (twOk) {
-    $done({ title: 'Bilibili', content: '✅ 台湾解锁', icon: 'tv', 'icon-color': '#00a1d6' });
-  } else {
-    $done({ title: 'Bilibili', content: '❌ 港澳台均不可用', icon: 'xmark.circle', 'icon-color': '#c0392b' });
-  }
+async function request(method, params) {
+    return new Promise((resolve, reject) => {
+        $httpClient[method.toLowerCase()](params, (error, response, data) => {
+            if (error) reject({ error, response, data });
+            else resolve({ error, response, data });
+        });
+    });
 }
 
-$httpClient.get({ url: urlHK, headers, timeout: 10 }, (error, response) => {
-  try {
-    const data = JSON.parse(response.body);
-    // code 0 = 成功, -10403 = 地区限制
-    results.hk = !error && response && data.code === 0;
-  } catch (e) {
-    results.hk = false;
-  }
-  finish();
-});
+async function get(params) {
+    return request('GET', typeof params === 'string' ? { url: params } : params);
+}
 
-$httpClient.get({ url: urlTW, headers, timeout: 10 }, (error, response) => {
-  try {
-    const data = JSON.parse(response.body);
-    results.tw = !error && response && data.code === 0;
-  } catch (e) {
-    results.tw = false;
-  }
-  finish();
-});
+function parseJsonBody(str) {
+    try { return JSON.parse(str); } catch (e) { return null; }
+}
+
+// 与参考脚本保持一致，检测港澳台解锁
+async function parseBilibiliHKMCTW() {
+    const res = await get(
+        'https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi'
+    ).catch(() => null);
+
+    if (!res || res.error || res.response?.status >= 400) return null;
+
+    const body = parseJsonBody(res.data);
+    if (body?.code === 0) return 'HK'; // 港澳台可用，用 HK 代表
+    if (body?.code === -10403) return null;
+    return null;
+}
+
+// 检测台湾专属内容
+async function parseBilibiliTW() {
+    const res = await get(
+        'https://api.bilibili.com/pgc/player/web/playurl?avid=50762638&cid=88970773&qn=0&type=&otype=json&ep_id=268176&fourk=1&fnver=0&fnval=16&module=bangumi'
+    ).catch(() => null);
+
+    if (!res || res.error || res.response?.status >= 400) return null;
+
+    const body = parseJsonBody(res.data);
+    if (body?.code === 0) return 'TW';
+    return null;
+}
+
+async function parseBilibili() {
+    const [hkRes, twRes] = await Promise.allSettled([
+        parseBilibiliHKMCTW(),
+        parseBilibiliTW(),
+    ]);
+
+    const hk = hkRes.status === 'fulfilled' ? hkRes.value : null;
+    const tw = twRes.status === 'fulfilled' ? twRes.value : null;
+
+    if (tw) return '已解锁，🇹🇼TW';
+    if (hk) return '已解锁，🇭🇰HK';
+    if (hk === null && tw === null) return '不可用';
+    return '连接失败';
+}
+
+(async () => {
+    try {
+        const content = await parseBilibili();
+        $done({ content });
+    } catch (e) {
+        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
+    }
+})();

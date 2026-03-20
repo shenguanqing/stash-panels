@@ -3,6 +3,12 @@ desc: 流媒体解锁 / AI 服务
 category: Custom
 
 tiles:
+  - name: check-apple
+    title: Apple 区域
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
+    backgroundColor: '#1d1d1f'
+    collapsed: true
+
   - name: check-netflix
     title: Netflix
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Netflix.png
@@ -40,26 +46,24 @@ tiles:
     collapsed: true
 
 script-providers:
+  check-apple:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-apple.js
+    interval: 86400
   check-netflix:
-    path: ./scripts/check-netflix.js
-    interval: 0
-
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-netflix.js
+    interval: 86400
   check-disney:
-    path: ./scripts/check-disney.js
-    interval: 0
-
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-disney.js
+    interval: 86400
   check-youtube:
-    path: ./scripts/check-youtube.js
-    interval: 0
-
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-youtube.js
+    interval: 86400
   check-bilibili:
-    path: ./scripts/check-bilibili.js
-    interval: 0
-
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-bilibili.js
+    interval: 86400
   check-chatgpt:
-    path: ./scripts/check-chatgpt.js
-    interval: 0
-
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-chatgpt.js
+    interval: 86400
   check-gemini:
-    path: ./scripts/check-gemini.js
-    interval: 0
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-gemini.js
+    interval: 86400

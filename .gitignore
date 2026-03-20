@@ -1,0 +1,32 @@
+# Node.js 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# iOS 项目文件夹（如果是使用 Cordova / Capacitor）
+ios/
+
+# 版本控制工具产生的文件
+*.svn
+.history/
+.hbuilderx/
+
+# 系统文件
+.DS_Store
+
+# 编辑器配置（不包括推荐插件配置）
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Visual Studio 相关文件
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 本地环境变量配置（仅保留示例文件）
+.env*
+!.env.example
