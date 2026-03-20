@@ -1,0 +1,65 @@
+name: 🌐 连通性检测面板2
+desc: 流媒体解锁 / AI 服务
+category: Custom
+
+tiles:
+  - name: check-netflix
+    title: Netflix
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Netflix.png
+    backgroundColor: '#e50914'
+    collapsed: true
+
+  - name: check-disney
+    title: Disney+
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Disney+.png
+    backgroundColor: '#0c1c4d'
+    collapsed: true
+
+  - name: check-youtube
+    title: YouTube
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png
+    backgroundColor: '#ff0000'
+    collapsed: true
+
+  - name: check-bilibili
+    title: Bilibili
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili.png
+    backgroundColor: '#00a1d6'
+    collapsed: true
+
+  - name: check-chatgpt
+    title: ChatGPT
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png
+    backgroundColor: '#10a37f'
+    collapsed: true
+
+  - name: check-gemini
+    title: Gemini
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png
+    backgroundColor: '#1a73e8'
+    collapsed: true
+
+script-providers:
+  check-netflix:
+    path: ./scripts/check-netflix.js
+    interval: 0
+
+  check-disney:
+    path: ./scripts/check-disney.js
+    interval: 0
+
+  check-youtube:
+    path: ./scripts/check-youtube.js
+    interval: 0
+
+  check-bilibili:
+    path: ./scripts/check-bilibili.js
+    interval: 0
+
+  check-chatgpt:
+    path: ./scripts/check-chatgpt.js
+    interval: 0
+
+  check-gemini:
+    path: ./scripts/check-gemini.js
+    interval: 0
