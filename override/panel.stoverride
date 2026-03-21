@@ -7,7 +7,7 @@ category: Custom
 tiles:
   - name: check-apple
     title: Apple 区域
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_1.png
     backgroundColor: '#1d1d1f'
     collapsed: true
 
@@ -43,7 +43,7 @@ tiles:
 
   - name: check-gemini
     title: Gemini
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png
     backgroundColor: '#1a73e8'
     collapsed: true
 

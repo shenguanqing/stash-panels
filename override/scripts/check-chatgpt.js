@@ -15,47 +15,55 @@ async function request(method, params) {
 }
 
 async function get(params) {
-    return request('GET', typeof params === 'string' ? { url: params } : params);
+    return request("GET", typeof params === "string" ? { url: params } : params);
 }
 
 function countryCodeToEmoji(code) {
-    if (!code) return '';
+    if (!code) return "";
     code = code.toUpperCase().slice(0, 2);
-    return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+    return String.fromCodePoint(
+        ...[...code].map((c) => 127397 + c.charCodeAt(0))
+    );
 }
 
 // 获取节点落地区域（与参考脚本一致）
 async function getChatGPTCountryCode() {
-    const res = await get('https://chat.openai.com/cdn-cgi/trace').catch(() => null);
-    if (!res || typeof res.data !== 'string') return null;
+    const res = await get("https://chat.openai.com/cdn-cgi/trace").catch(
+        () => null
+    );
+    if (!res || typeof res.data !== "string") return null;
 
     const map = {};
-    res.data.split('\n').forEach(line => {
-        const idx = line.indexOf('=');
+    res.data.split("\n").forEach((line) => {
+        const idx = line.indexOf("=");
         if (idx !== -1) map[line.slice(0, idx)] = line.slice(idx + 1);
     });
 
-    const loc = map['loc'];
+    const loc = map["loc"];
     return loc ? loc.trim() : null;
 }
 
 // 检测 Web 是否可用（与参考脚本一致）
 async function parseChatGPTWeb() {
-    const res = await get('https://api.openai.com/compliance/cookie_requirements').catch(() => null);
-    if (!res || typeof res.data !== 'string') return 'failed';
-    if (res.data.toLowerCase().includes('unsupported_country')) return 'unsupported';
-    return 'ok';
+    const res = await get(
+        "https://api.openai.com/compliance/cookie_requirements"
+    ).catch(() => null);
+    if (!res || typeof res.data !== "string") return "failed";
+    if (res.data.toLowerCase().includes("unsupported_country"))
+        return "unsupported";
+    return "ok";
 }
 
 // 检测 iOS 端是否可用（与参考脚本一致）
 async function parseChatGPTiOS() {
-    const res = await get('https://ios.chat.openai.com/').catch(() => null);
-    if (!res || typeof res.data !== 'string') return 'failed';
+    const res = await get("https://ios.chat.openai.com/").catch(() => null);
+    if (!res || typeof res.data !== "string") return "failed";
     const body = res.data.toLowerCase();
-    if (body.includes('you may be connected to a disallowed isp')) return 'disallowed';
-    if (body.includes('request is not allowed')) return 'ok';
-    if (body.includes('sorry, you have been blocked')) return 'blocked';
-    return 'failed';
+    if (body.includes("you may be connected to a disallowed isp"))
+        return "disallowed";
+    if (body.includes("request is not allowed")) return "ok";
+    if (body.includes("sorry, you have been blocked")) return "blocked";
+    return "failed";
 }
 
 async function parseChatGPT() {
@@ -65,21 +73,21 @@ async function parseChatGPT() {
         parseChatGPTiOS(),
     ]);
 
-    const loc = locRes.status === 'fulfilled' ? locRes.value : null;
-    const web = webRes.status === 'fulfilled' ? webRes.value : 'failed';
-    const ios = iosRes.status === 'fulfilled' ? iosRes.value : 'failed';
+    const loc = locRes.status === "fulfilled" ? locRes.value : null;
+    const web = webRes.status === "fulfilled" ? webRes.value : "failed";
+    const ios = iosRes.status === "fulfilled" ? iosRes.value : "failed";
 
-    const regionLabel = loc ? `，${countryCodeToEmoji(loc)}${loc}` : '';
+    const regionLabel = loc ? `，${countryCodeToEmoji(loc)}${loc}` : "";
 
-    if (web === 'unsupported') return `不可用${regionLabel}`;
-    if (ios === 'disallowed') return `ISP 不支持${regionLabel}`;
-    if (ios === 'blocked') return `已封锁${regionLabel}`;
+    if (web === "unsupported") return `不可用${regionLabel}`;
+    if (ios === "disallowed") return `ISP 不支持${regionLabel}`;
+    if (ios === "blocked") return `已封锁${regionLabel}`;
 
     const parts = [];
-    if (web === 'ok') parts.push('Web');
-    if (ios === 'ok') parts.push('iOS');
+    if (web === "ok") parts.push("Web");
+    if (ios === "ok") parts.push("iOS");
 
-    if (parts.length > 0) return `${parts.join(' + ')} 可用${regionLabel}`;
+    if (parts.length > 0) return `${parts.join(" + ")} 可用${regionLabel}`;
     return `连接失败${regionLabel}`;
 }
 
@@ -89,6 +97,6 @@ async function parseChatGPT() {
         $done({ content });
     } catch (e) {
         console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
-        $done({ content: '连接失败' });
+        $done({ content: "连接失败" });
     }
 })();
