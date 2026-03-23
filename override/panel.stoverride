@@ -1,7 +1,6 @@
-#SUBSCRIBED https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/panel.stoverride
 name: 🌐 连通性检测面板
 desc: 流媒体解锁 / AI 服务
-icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Global.png
+icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png
 category: Custom
 
 tiles:
