@@ -31,8 +31,8 @@ tiles:
 
   - name: check-bilibili
     title: Bilibili 港澳台
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili.png
-    backgroundColor: '#00a1d6'
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili_3.png
+    backgroundColor: '#fb7299'
     collapsed: true
 
   - name: check-chatgpt
