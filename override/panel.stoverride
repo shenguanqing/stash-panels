@@ -1,4 +1,4 @@
-#SUBSCRIBED https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/panel.stoverride
+#SUBSCRIBED https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/panel.stoverride
 name: 🌐 连通性检测面板
 desc: 流媒体解锁 / AI 服务
 icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Global.png
@@ -49,23 +49,23 @@ tiles:
 
 script-providers:
   check-apple:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-apple.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-apple.js
     interval: 86400
   check-netflix:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-netflix.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-netflix.js
     interval: 86400
   check-disney:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-disney.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-disney.js
     interval: 86400
   check-youtube:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-youtube.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-youtube.js
     interval: 86400
   check-bilibili:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-bilibili.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-bilibili.js
     interval: 86400
   check-chatgpt:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-chatgpt.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-chatgpt.js
     interval: 86400
   check-gemini:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/scripts/check-gemini.js
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-gemini.js
     interval: 86400
