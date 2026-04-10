@@ -24,7 +24,6 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-// 与参考脚本保持一致的解析逻辑
 async function parseYoutubePremium() {
     const res = await get('https://www.youtube.com/premium').catch(() => null);
 

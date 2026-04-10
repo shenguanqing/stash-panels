@@ -1,3 +1,8 @@
+/**
+ * Apple 区域检测
+ * Apple CDN 落地区域检测
+ */
+
 function countryCodeToEmoji(code) {
     if (!code) return '';
     code = code.toUpperCase().slice(0, 2);

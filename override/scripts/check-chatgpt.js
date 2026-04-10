@@ -1,6 +1,6 @@
 /**
- * ChatGPT / OpenAI 访问检测
- * 检测是否能访问 OpenAI 服务，以及是否支持 API 访问
+ * ChatGPT 访问检测
+ * 检测 OpenAI Web 及 iOS 端可用性与落地区域
  */
 
 var $httpClient, $done;
@@ -26,7 +26,7 @@ function countryCodeToEmoji(code) {
     );
 }
 
-// 获取节点落地区域（与参考脚本一致）
+// 获取 ChatGPT 国家代码
 async function getChatGPTCountryCode() {
     const res = await get("https://chat.openai.com/cdn-cgi/trace").catch(
         () => null
@@ -43,7 +43,7 @@ async function getChatGPTCountryCode() {
     return loc ? loc.trim() : null;
 }
 
-// 检测 Web 是否可用（与参考脚本一致）
+// 检测 Web 是否可用
 async function parseChatGPTWeb() {
     const res = await get(
         "https://api.openai.com/compliance/cookie_requirements"
@@ -54,7 +54,7 @@ async function parseChatGPTWeb() {
     return "ok";
 }
 
-// 检测 iOS 端是否可用（与参考脚本一致）
+// 检测 iOS 端是否可用
 async function parseChatGPTiOS() {
     const res = await get("https://ios.chat.openai.com/").catch(() => null);
     if (!res || typeof res.data !== "string") return "failed";

@@ -1,5 +1,5 @@
 /**
- * Bilibili 港澳台解锁检测
+ * Bilibili 解锁检测
  * 检测是否可访问港澳台限定内容
  */
 
@@ -26,7 +26,7 @@ function parseJsonBody(str) {
     }
 }
 
-// 与参考脚本保持一致，检测港澳台解锁
+// 检测港澳台解锁
 async function parseBilibiliHKMCTW() {
     const res = await get(
         "https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi"

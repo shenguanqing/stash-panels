@@ -16,7 +16,7 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-// 与参考脚本完全一致：通过 x-originating-url 响应头提取地区
+// 通过 x-originating-url 响应头提取地区
 function innerCheck(filmId) {
     return new Promise((resolve, reject) => {
         $httpClient.get(

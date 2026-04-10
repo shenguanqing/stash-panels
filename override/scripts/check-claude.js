@@ -1,14 +1,24 @@
 /**
  * Claude 访问检测
- * 检测是否能访问 claude.ai/cdn-cgi/trace + Web + API
+ * 检测 claude.ai/cdn-cgi/trace 落地区域及可用性
  */
 
 var $httpClient, $done;
 
-const REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
-    'Accept-Language': 'en',
-};
+// 支持国家列表
+const CLAUDE_SUPPORT_COUNTRY = new Set([
+    "AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB","BE","BZ",
+    "BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH","CM","CA","TD","CL",
+    "CO","KM","CG","CR","CI","HR","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ",
+    "EE","SZ","FJ","FI","FR","GA","GM","GE","DE","GH","GR","GD","GT","GN","GW","GY",
+    "HT","HN","HU","IS","IN","ID","IQ","IE","IL","IT","JM","JP","JO","KZ","KE","KI",
+    "KW","KG","LA","LV","LB","LS","LR","LI","LT","LU","MG","MW","MY","MV","MT","MH",
+    "MR","MU","MX","FM","MD","MC","MN","ME","MA","MZ","NA","NR","NP","NL","NZ","NE",
+    "NG","MK","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PL","PT","QA","RO",
+    "RW","KN","LC","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB",
+    "ZA","KR","ES","LK","SR","SE","CH","TW","TJ","TZ","TH","TL","TG","TO","TT","TN",
+    "TR","TM","TV","UG","UA","AE","GB","US","UY","UZ","VU","VA","VN","ZM","ZW",
+]);
 
 function countryCodeToEmoji(code) {
     if (!code) return '';
@@ -16,82 +26,48 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-// 通过 Cloudflare trace 获取落地区域（claude.ai 托管在 Cloudflare 上）
-function getRegionFromTrace() {
-    return new Promise((resolve) => {
-        $httpClient.get(
-            { url: 'https://claude.ai/cdn-cgi/trace', headers: REQUEST_HEADERS },
-            (error, response, data) => {
-                if (error || !data) { resolve(null); return; }
-                const map = {};
-                data.split('\n').forEach(line => {
-                    const idx = line.indexOf('=');
-                    if (idx !== -1) map[line.slice(0, idx)] = line.slice(idx + 1).trim();
-                });
-                resolve(map['loc'] || null);
-            }
-        );
-    });
-}
-
-// 检测 claude.ai 是否可访问
-function checkClaudeWeb() {
-    return new Promise((resolve) => {
-        $httpClient.get(
-            { url: 'https://claude.ai/', headers: REQUEST_HEADERS },
-            (error, response, data) => {
-                if (error || !data) { resolve('failed'); return; }
-                const status = response.status;
-                const body = data.toLowerCase();
-
-                if (status === 403 || body.includes('not available in your country') || body.includes('unavailable')) {
-                    resolve('blocked');
-                    return;
-                }
-                if (status === 200) { resolve('ok'); return; }
-                resolve('failed');
-            }
-        );
-    });
-}
-
-// 检测 API 端点（401 = 无 key 但服务可达）
-function checkClaudeAPI() {
+// 与 Go 参考实现一致：cdn-cgi/trace 提取 loc，对照支持列表判断
+async function parseClaude() {
     return new Promise((resolve) => {
         $httpClient.get(
             {
-                url: 'https://api.anthropic.com/v1/models',
-                headers: { ...REQUEST_HEADERS, 'x-api-key': 'test' },
+                url: 'https://claude.ai/cdn-cgi/trace',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+                },
             },
             (error, response, data) => {
-                if (error) { resolve('failed'); return; }
-                const status = response.status;
-                // 401 = 无效 key 但服务可达; 200 = 完全可用
-                if (status === 200 || status === 401) { resolve('ok'); return; }
-                if (status === 403) { resolve('blocked'); return; }
-                resolve('failed');
+                if (error || !data) { resolve('连接失败'); return; }
+
+                // 提取 loc= 字段
+                const lines = data.split('\n');
+                let loc = '';
+                for (const line of lines) {
+                    if (line.startsWith('loc=')) {
+                        loc = line.slice(4).trim();
+                        break;
+                    }
+                }
+
+                if (!loc) { resolve('连接失败'); return; }
+
+                const emoji = countryCodeToEmoji(loc);
+                const regionLabel = `，${emoji}${loc.toUpperCase()}`;
+
+                // Tor 出口节点
+                if (loc === 'T1') {
+                    resolve(`已解锁（Tor）`);
+                    return;
+                }
+
+                if (CLAUDE_SUPPORT_COUNTRY.has(loc.toUpperCase())) {
+                    resolve(`已解锁${regionLabel}`);
+                } else {
+                    resolve(`不可用${regionLabel}`);
+                }
             }
         );
     });
-}
-
-async function parseClaude() {
-    const [loc, web, api] = await Promise.all([
-        getRegionFromTrace(),
-        checkClaudeWeb(),
-        checkClaudeAPI(),
-    ]);
-
-    const regionLabel = loc ? `，${countryCodeToEmoji(loc)}${loc.toUpperCase()}` : '';
-
-    if (web === 'blocked') return `不可用${regionLabel}`;
-
-    const parts = [];
-    if (web === 'ok') parts.push('Web');
-    if (api === 'ok') parts.push('API');
-
-    if (parts.length > 0) return `${parts.join(' + ')} 可用${regionLabel}`;
-    return `连接失败${regionLabel}`;
 }
 
 (async () => {

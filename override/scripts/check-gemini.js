@@ -1,6 +1,6 @@
 /**
- * Google Gemini 访问检测
- * 检测是否能访问 Gemini Web 及 API 服务
+ * Gemini 访问检测
+ * 检测 Gemini Web 可用性与落地区域
  */
 
 var $httpClient, $done;
@@ -26,7 +26,6 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-// 与参考脚本完全一致的解析逻辑
 async function parseGemini() {
     const res = await get('https://gemini.google.com').catch(() => null);
 

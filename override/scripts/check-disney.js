@@ -23,7 +23,7 @@ function timeout(delay = 7000) {
     return new Promise((_, reject) => setTimeout(() => reject('Timeout'), delay));
 }
 
-// 与参考脚本完全一致：检测主页获取 region 和 cnbl
+// 检测主页获取 region 和 cnbl
 function testHomePage() {
     return new Promise((resolve, reject) => {
         $httpClient.get(
@@ -42,7 +42,7 @@ function testHomePage() {
     });
 }
 
-// 与参考脚本完全一致：通过 BAMTech GraphQL 获取 countryCode 和 inSupportedLocation
+// 通过 BAMTech GraphQL 获取 countryCode 和 inSupportedLocation
 function getLocationInfo() {
     return new Promise((resolve, reject) => {
         $httpClient.post(

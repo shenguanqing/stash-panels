@@ -9,16 +9,16 @@
 | 服务 | 检测内容 | 示例输出 |
 |------|---------|---------|
 | Apple | 落地区域 | `🇺🇸US` |
-| Netflix | 已完整解锁 / 自制剧 / 不可用 | `已完整解锁，🇭🇰HK` |
+| Netflix | 已完整解锁 / 仅自制剧 / 不可用 | `已完整解锁，🇭🇰HK` |
 | Disney+ | 已解锁 / 即将登陆 / 不可用 | `已解锁，🇭🇰HK` |
 | Prime Video | 已解锁 / 不可用 | `已解锁，🇯🇵JP` |
-| YouTube | Premium 可用区域 | `已解锁，🇺🇸US` |
+| YouTube | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | Spotify | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | TikTok | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | Bilibili | 港澳台解锁状态 | `已解锁，🇹🇼TW` |
 | ChatGPT | Web / iOS 可用性 + 落地区域 | `Web + iOS 可用，🇺🇸US` |
-| Gemini | 可用性 + 落地区域 | `已解锁，🇺🇸US` |
-| Claude | Web / API 可用性 + 落地区域 | `Web + API 可用，🇺🇸US` |
+| Gemini | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
+| Claude | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 
 ---
 
@@ -46,7 +46,7 @@ https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/over
 | `check-bilibili.js` | B站 pgc playurl API（港澳台双路检测） |
 | `check-chatgpt.js` | OpenAI `cdn-cgi/trace` + `cookie_requirements` + iOS 端 |
 | `check-gemini.js` | `gemini.google.com` 页面特征字符串匹配 |
-| `check-claude.js` | `claude.ai/cdn-cgi/trace` + Web + API 三路检测 |
+| `check-claude.js` | `claude.ai/cdn-cgi/trace` 通过 `loc` 提取区域并匹配支持列表 |
 
 ---
 
