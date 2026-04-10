@@ -34,12 +34,6 @@ tiles:
     backgroundColor: '#ff0000'
     collapsed: true
 
-  - name: check-spotify
-    title: Spotify
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Spotify.png
-    backgroundColor: '#1db954'
-    collapsed: true
-
   - name: check-tiktok
     title: TikTok
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok.png
@@ -50,6 +44,12 @@ tiles:
     title: Bilibili 港澳台
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili_3.png
     backgroundColor: '#fb7299'
+    collapsed: true
+
+  - name: check-spotify
+    title: Spotify
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Spotify.png
+    backgroundColor: '#1db954'
     collapsed: true
 
   - name: check-chatgpt
@@ -86,14 +86,14 @@ script-providers:
   check-youtube:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-youtube.js
     interval: 86400
-  check-spotify:
-    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-spotify.js
-    interval: 86400
   check-tiktok:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-tiktok.js
     interval: 86400
   check-bilibili:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-bilibili.js
+    interval: 86400
+  check-spotify:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-spotify.js
     interval: 86400
   check-chatgpt:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-chatgpt.js

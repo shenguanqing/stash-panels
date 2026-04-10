@@ -6,7 +6,7 @@
 var $httpClient, $done;
 
 // 支持国家列表
-const CLAUDE_SUPPORT_COUNTRY = new Set([
+const CLAUDE_SUPPORT_COUNTRY = [
     "AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB","BE","BZ",
     "BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH","CM","CA","TD","CL",
     "CO","KM","CG","CR","CI","HR","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ",
@@ -18,7 +18,7 @@ const CLAUDE_SUPPORT_COUNTRY = new Set([
     "RW","KN","LC","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB",
     "ZA","KR","ES","LK","SR","SE","CH","TW","TJ","TZ","TH","TL","TG","TO","TT","TN",
     "TR","TM","TV","UG","UA","AE","GB","US","UY","UZ","VU","VA","VN","ZM","ZW",
-]);
+];
 
 function countryCodeToEmoji(code) {
     if (!code) return '';
@@ -60,7 +60,7 @@ async function parseClaude() {
                     return;
                 }
 
-                if (CLAUDE_SUPPORT_COUNTRY.has(loc.toUpperCase())) {
+                if (CLAUDE_SUPPORT_COUNTRY.indexOf(loc.toUpperCase()) !== -1) {
                     resolve(`已解锁${regionLabel}`);
                 } else {
                     resolve(`不可用${regionLabel}`);

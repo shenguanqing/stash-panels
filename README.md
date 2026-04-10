@@ -13,9 +13,9 @@
 | Disney+ | 已解锁 / 即将登陆 / 不可用 | `已解锁，🇭🇰HK` |
 | Prime Video | 已解锁 / 不可用 | `已解锁，🇯🇵JP` |
 | YouTube | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
-| Spotify | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | TikTok | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | Bilibili | 港澳台解锁状态 | `已解锁，🇹🇼TW` |
+| Spotify | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | ChatGPT | Web / iOS 可用性 + 落地区域 | `Web + iOS 可用，🇺🇸US` |
 | Gemini | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | Claude | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
@@ -41,9 +41,9 @@ https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/over
 | `check-disney.js` | Disney+ 主站 + BAMTech GraphQL API |
 | `check-primevideo.js` | `primevideo.com/` 页面 `currentTerritory` 字段解析 |
 | `check-youtube.js` | `youtube.com/premium` 页面解析 |
-| `check-spotify.js` | Spotify 注册 API `status` 字段判断 |
 | `check-tiktok.js` | `tiktok.com/` 页面 `region` 字段解析 |
 | `check-bilibili.js` | B站 pgc playurl API（港澳台双路检测） |
+| `check-spotify.js` | Spotify 注册 API `status` 字段判断 |
 | `check-chatgpt.js` | OpenAI `cdn-cgi/trace` + `cookie_requirements` + iOS 端 |
 | `check-gemini.js` | `gemini.google.com` 页面特征字符串匹配 |
 | `check-claude.js` | `claude.ai/cdn-cgi/trace` 通过 `loc` 提取区域并匹配支持列表 |
