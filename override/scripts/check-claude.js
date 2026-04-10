@@ -7,17 +7,17 @@ var $httpClient, $done;
 
 // 支持国家列表
 const CLAUDE_SUPPORT_COUNTRY = [
-    "AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB","BE","BZ",
-    "BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH","CM","CA","TD","CL",
-    "CO","KM","CG","CR","CI","HR","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ",
-    "EE","SZ","FJ","FI","FR","GA","GM","GE","DE","GH","GR","GD","GT","GN","GW","GY",
-    "HT","HN","HU","IS","IN","ID","IQ","IE","IL","IT","JM","JP","JO","KZ","KE","KI",
-    "KW","KG","LA","LV","LB","LS","LR","LI","LT","LU","MG","MW","MY","MV","MT","MH",
-    "MR","MU","MX","FM","MD","MC","MN","ME","MA","MZ","NA","NR","NP","NL","NZ","NE",
-    "NG","MK","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PL","PT","QA","RO",
-    "RW","KN","LC","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB",
-    "ZA","KR","ES","LK","SR","SE","CH","TW","TJ","TZ","TH","TL","TG","TO","TT","TN",
-    "TR","TM","TV","UG","UA","AE","GB","US","UY","UZ","VU","VA","VN","ZM","ZW",
+    "AL", "DZ", "AD", "AO", "AG", "AR", "AM", "AU", "AT", "AZ", "BS", "BH", "BD", "BB", "BE", "BZ",
+    "BJ", "BT", "BO", "BA", "BW", "BR", "BN", "BG", "BF", "BI", "CV", "KH", "CM", "CA", "TD", "CL",
+    "CO", "KM", "CG", "CR", "CI", "HR", "CY", "CZ", "DK", "DJ", "DM", "DO", "EC", "EG", "SV", "GQ",
+    "EE", "SZ", "FJ", "FI", "FR", "GA", "GM", "GE", "DE", "GH", "GR", "GD", "GT", "GN", "GW", "GY",
+    "HT", "HN", "HU", "IS", "IN", "ID", "IQ", "IE", "IL", "IT", "JM", "JP", "JO", "KZ", "KE", "KI",
+    "KW", "KG", "LA", "LV", "LB", "LS", "LR", "LI", "LT", "LU", "MG", "MW", "MY", "MV", "MT", "MH",
+    "MR", "MU", "MX", "FM", "MD", "MC", "MN", "ME", "MA", "MZ", "NA", "NR", "NP", "NL", "NZ", "NE",
+    "NG", "MK", "NO", "OM", "PK", "PW", "PS", "PA", "PG", "PY", "PE", "PH", "PL", "PT", "QA", "RO",
+    "RW", "KN", "LC", "VC", "WS", "SM", "ST", "SA", "SN", "RS", "SC", "SL", "SG", "SK", "SI", "SB",
+    "ZA", "KR", "ES", "LK", "SR", "SE", "CH", "TW", "TJ", "TZ", "TH", "TL", "TG", "TO", "TT", "TN",
+    "TR", "TM", "TV", "UG", "UA", "AE", "GB", "US", "UY", "UZ", "VU", "VA", "VN", "ZM", "ZW",
 ];
 
 function countryCodeToEmoji(code) {
@@ -26,7 +26,7 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-// 与 Go 参考实现一致：cdn-cgi/trace 提取 loc，对照支持列表判断
+// cdn-cgi/trace 提取 loc，对照支持列表判断
 async function parseClaude() {
     return new Promise((resolve) => {
         $httpClient.get(
@@ -51,8 +51,9 @@ async function parseClaude() {
 
                 if (!loc) { resolve('连接失败'); return; }
 
-                const emoji = countryCodeToEmoji(loc);
-                const regionLabel = `，${emoji}${loc.toUpperCase()}`;
+                const code = loc.toUpperCase().replace(/[^A-Z]/g, '');
+                const emoji = countryCodeToEmoji(code);
+                const regionLabel = `，${emoji}${code}`;
 
                 // Tor 出口节点
                 if (loc === 'T1') {
@@ -60,7 +61,7 @@ async function parseClaude() {
                     return;
                 }
 
-                if (CLAUDE_SUPPORT_COUNTRY.indexOf(loc.toUpperCase()) !== -1) {
+                if (CLAUDE_SUPPORT_COUNTRY.includes(code)) {
                     resolve(`已解锁${regionLabel}`);
                 } else {
                     resolve(`不可用${regionLabel}`);
