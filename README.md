@@ -9,12 +9,16 @@
 | 服务 | 检测内容 | 示例输出 |
 |------|---------|---------|
 | Apple | 落地区域 | `🇺🇸US` |
-| Netflix | 已完整解锁 / 自制剧 / 不可用 | `已完整解锁，🇺🇸US` |
+| Netflix | 已完整解锁 / 自制剧 / 不可用 | `已完整解锁，🇭🇰HK` |
 | Disney+ | 已解锁 / 即将登陆 / 不可用 | `已解锁，🇭🇰HK` |
-| YouTube | Premium 可用区域 | `已解锁，🇯🇵JP` |
+| Prime Video | 已解锁 / 不可用 | `已解锁，🇯🇵JP` |
+| YouTube | Premium 可用区域 | `已解锁，🇺🇸US` |
+| Spotify | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
+| TikTok | 已解锁 / 不可用 | `已解锁，🇺🇸US` |
 | Bilibili | 港澳台解锁状态 | `已解锁，🇹🇼TW` |
 | ChatGPT | Web / iOS 可用性 + 落地区域 | `Web + iOS 可用，🇺🇸US` |
 | Gemini | 可用性 + 落地区域 | `已解锁，🇺🇸US` |
+| Claude | Web / API 可用性 + 落地区域 | `Web + API 可用，🇺🇸US` |
 
 ---
 
@@ -26,7 +30,6 @@
 https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/override/panel.stoverride
 ```
 
-
 ---
 
 ## 脚本说明
@@ -36,10 +39,14 @@ https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/over
 | `check-apple.js` | Apple CDN 落地区域检测 |
 | `check-netflix.js` | `netflix.com/title/` 通过响应头 `x-originating-url` 提取区域 |
 | `check-disney.js` | Disney+ 主站 + BAMTech GraphQL API |
+| `check-primevideo.js` | `primevideo.com/` 页面 `currentTerritory` 字段解析 |
 | `check-youtube.js` | `youtube.com/premium` 页面解析 |
+| `check-spotify.js` | Spotify 注册 API `status` 字段判断 |
+| `check-tiktok.js` | `tiktok.com/` 页面 `region` 字段解析 |
 | `check-bilibili.js` | B站 pgc playurl API（港澳台双路检测） |
 | `check-chatgpt.js` | OpenAI `cdn-cgi/trace` + `cookie_requirements` + iOS 端 |
 | `check-gemini.js` | `gemini.google.com` 页面特征字符串匹配 |
+| `check-claude.js` | `claude.ai/cdn-cgi/trace` + Web + API 三路检测 |
 
 ---
 
@@ -51,4 +58,3 @@ https://raw.githubusercontent.com/shenguanqing/stash-panels/refs/heads/main/over
 - 使用本项目所产生的一切后果由使用者自行承担，作者不承担任何连带责任。
 - 若各平台调整接口导致脚本失效，作者不保证及时更新与维护。
 - 请在**合法合规**的前提下使用，并遵守所在地区的相关法律法规及各平台服务条款。
-

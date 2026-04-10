@@ -22,10 +22,28 @@ tiles:
     backgroundColor: '#0c1c4d'
     collapsed: true
 
+  - name: check-primevideo
+    title: Prime Video
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Prime_Video.png
+    backgroundColor: '#00a8e0'
+    collapsed: true
+
   - name: check-youtube
     title: YouTube
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png
     backgroundColor: '#ff0000'
+    collapsed: true
+
+  - name: check-spotify
+    title: Spotify
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Spotify.png
+    backgroundColor: '#1db954'
+    collapsed: true
+
+  - name: check-tiktok
+    title: TikTok
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok.png
+    backgroundColor: '#010101'
     collapsed: true
 
   - name: check-bilibili
@@ -46,6 +64,12 @@ tiles:
     backgroundColor: '#1a73e8'
     collapsed: true
 
+  - name: check-claude
+    title: Claude
+    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/anthropic.png
+    backgroundColor: '#cc9b7a'
+    collapsed: true
+
 script-providers:
   check-apple:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-apple.js
@@ -56,8 +80,17 @@ script-providers:
   check-disney:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-disney.js
     interval: 86400
+  check-primevideo:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-primevideo.js
+    interval: 86400
   check-youtube:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-youtube.js
+    interval: 86400
+  check-spotify:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-spotify.js
+    interval: 86400
+  check-tiktok:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-tiktok.js
     interval: 86400
   check-bilibili:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-bilibili.js
@@ -67,4 +100,7 @@ script-providers:
     interval: 86400
   check-gemini:
     url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-gemini.js
+    interval: 86400
+  check-claude:
+    url: https://raw.githubusercontent.com/shenguanqing/stash-panels/main/override/scripts/check-claude.js
     interval: 86400
