@@ -1,71 +1,45 @@
 /**
- * Bilibili 解锁检测
- * 检测是否可访问港澳台限定内容
+ * 哔哩哔哩解锁检测
+ * 检测当前节点能否访问哔哩哔哩港澳台及大陆限定内容。
+ *
+ * 检测逻辑：
+ *   - 港澳台：请求港澳台限定番剧播放接口（avid=18281381），code=0 则可用
+ *   - 大陆：请求大陆限定番剧播放接口（avid=82846771），code=0 则可用
+ *   - code=0 → 已解锁；code=-10403 → 不可用；其余 → 连接失败
  */
 
 var $httpClient, $done;
 
-async function request(method, params) {
-    return new Promise((resolve, reject) => {
-        $httpClient[method.toLowerCase()](params, (error, response, data) => {
-            if (error) reject({ error, response, data });
-            else resolve({ error, response, data });
+function fetchJson(url) {
+    return new Promise((resolve) => {
+        $httpClient.get({ url }, (error, response, data) => {
+            if (error || !data) { resolve(null); return; }
+            try { resolve(JSON.parse(data)); }
+            catch { resolve(null); }
         });
     });
 }
 
-async function get(params) {
-    return request("GET", typeof params === "string" ? { url: params } : params);
-}
-
-function parseJsonBody(str) {
-    try {
-        return JSON.parse(str);
-    } catch (e) {
-        return null;
-    }
-}
-
-// 检测港澳台解锁
-async function parseBilibiliHKMCTW() {
-    const res = await get(
-        "https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi"
-    ).catch(() => null);
-
-    if (!res || res.error || res.response?.status >= 400) return null;
-
-    const body = parseJsonBody(res.data);
-    if (body?.code === 0) return "HK"; // 港澳台可用，用 HK 代表
-    if (body?.code === -10403) return null;
-    return null;
-}
-
-// 检测台湾专属内容
-async function parseBilibiliTW() {
-    const res = await get(
-        "https://api.bilibili.com/pgc/player/web/playurl?avid=50762638&cid=88970773&qn=0&type=&otype=json&ep_id=268176&fourk=1&fnver=0&fnval=16&module=bangumi"
-    ).catch(() => null);
-
-    if (!res || res.error || res.response?.status >= 400) return null;
-
-    const body = parseJsonBody(res.data);
-    if (body?.code === 0) return "TW";
-    return null;
+function codeToStatus(code) {
+    if (code === 0) return '已解锁';
+    if (code === -10403) return '不可用';
+    return '连接失败';
 }
 
 async function parseBilibili() {
-    const [hkRes, twRes] = await Promise.allSettled([
-        parseBilibiliHKMCTW(),
-        parseBilibiliTW(),
+    const [hkData, mainlandData] = await Promise.all([
+        fetchJson('https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi'),
+        fetchJson('https://api.bilibili.com/pgc/player/web/playurl?avid=82846771&qn=0&type=&otype=json&ep_id=307247&fourk=1&fnver=0&fnval=16&module=bangumi'),
     ]);
 
-    const hk = hkRes.status === "fulfilled" ? hkRes.value : null;
-    const tw = twRes.status === "fulfilled" ? twRes.value : null;
+    const hkCode = typeof hkData?.code === 'number' ? hkData.code : null;
+    const mainlandCode = typeof mainlandData?.code === 'number' ? mainlandData.code : null;
 
-    if (tw) return "已解锁，🇹🇼TW";
-    if (hk) return "已解锁，🇭🇰HK";
-    if (hk === null && tw === null) return "不可用";
-    return "连接失败";
+    const hkStatus = hkCode !== null ? codeToStatus(hkCode) : '连接失败';
+    const mainlandStatus = mainlandCode !== null ? codeToStatus(mainlandCode) : '连接失败';
+
+    if (hkStatus === mainlandStatus) return `港澳台 ${hkStatus} / 大陆 ${mainlandStatus}`;
+    return `港澳台 ${hkStatus} / 大陆 ${mainlandStatus}`;
 }
 
 (async () => {
@@ -73,7 +47,7 @@ async function parseBilibili() {
         const content = await parseBilibili();
         $done({ content });
     } catch (e) {
-        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
-        $done({ content: "连接失败" });
+        console.log(`[Bilibili Error] ${e?.message || JSON.stringify(e)}`);
+        $done({ content: '连接失败' });
     }
 })();

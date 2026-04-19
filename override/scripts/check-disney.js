@@ -1,11 +1,17 @@
 /**
  * Disney+ 解锁检测
- * 通过 BAMTech 媒体服务 API 检测区域
+ * 检测当前节点能否访问 Disney+，并识别可用区域。
+ *
+ * 检测逻辑：
+ *   1. 请求主页，检查是否返回"不可用"提示
+ *   2. 通过 BAMTech GraphQL 获取 countryCode 和 inSupportedLocation
+ *      - inSupportedLocation = false → 即将登陆
+ *      - inSupportedLocation = true  → 已解锁
  */
 
 var $httpClient, $done;
 
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36';
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 const STATUS_COMING = 2;
 const STATUS_AVAILABLE = 1;
@@ -19,30 +25,26 @@ function countryCodeToEmoji(code) {
     return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 }
 
-function timeout(delay = 7000) {
-    return new Promise((_, reject) => setTimeout(() => reject('Timeout'), delay));
+function timeout(ms = 7000) {
+    return new Promise((_, reject) => setTimeout(() => reject('Timeout'), ms));
 }
 
-// 检测主页获取 region 和 cnbl
 function testHomePage() {
     return new Promise((resolve, reject) => {
         $httpClient.get(
             { url: 'https://www.disneyplus.com/', headers: { 'Accept-Language': 'en', 'User-Agent': UA } },
             (error, response, data) => {
                 if (error) { reject('Error'); return; }
-                if (response.status !== 200 || data.indexOf('Sorry, Disney+ is not available in your region.') !== -1) {
-                    reject('Not Available');
-                    return;
+                if (response.status !== 200 || data.includes('Sorry, Disney+ is not available in your region.')) {
+                    reject('Not Available'); return;
                 }
                 const match = data.match(/Region: ([A-Za-z]{2})[\s\S]*?CNBL: ([12])/);
-                if (!match) { resolve({ region: '', cnbl: '' }); return; }
-                resolve({ region: match[1], cnbl: match[2] });
+                resolve(match ? { region: match[1], cnbl: match[2] } : { region: '', cnbl: '' });
             }
         );
     });
 }
 
-// 通过 BAMTech GraphQL 获取 countryCode 和 inSupportedLocation
 function getLocationInfo() {
     return new Promise((resolve, reject) => {
         $httpClient.post(
@@ -60,12 +62,9 @@ function getLocationInfo() {
                         input: {
                             applicationRuntime: 'chrome',
                             attributes: {
-                                browserName: 'chrome',
-                                browserVersion: '94.0.4606',
-                                manufacturer: 'apple',
-                                model: null,
-                                operatingSystem: 'macintosh',
-                                operatingSystemVersion: '10.15.7',
+                                browserName: 'chrome', browserVersion: '124.0.0',
+                                manufacturer: 'apple', model: null,
+                                operatingSystem: 'macintosh', operatingSystemVersion: '10.15.7',
                                 osDeviceIds: [],
                             },
                             deviceFamily: 'browser',
@@ -80,8 +79,8 @@ function getLocationInfo() {
                 if (response.status !== 200) { reject('Not Available'); return; }
                 const parsed = JSON.parse(data);
                 if (parsed?.errors) { reject('Not Available'); return; }
-                const { token: { accessToken }, session: { inSupportedLocation, location: { countryCode } } } = parsed?.extensions?.sdk;
-                resolve({ inSupportedLocation, countryCode, accessToken });
+                const { session: { inSupportedLocation, location: { countryCode } } } = parsed?.extensions?.sdk;
+                resolve({ inSupportedLocation, countryCode });
             }
         );
     });
@@ -89,13 +88,15 @@ function getLocationInfo() {
 
 async function testDisneyPlus() {
     try {
-        const { region } = await Promise.race([testHomePage(), timeout(7000)]);
-        const { countryCode, inSupportedLocation } = await Promise.race([getLocationInfo(), timeout(7000)]);
+        const { region } = await Promise.race([testHomePage(), timeout()]);
+        const { countryCode, inSupportedLocation } = await Promise.race([getLocationInfo(), timeout()]);
         const finalRegion = countryCode ?? region;
-        if (inSupportedLocation === false || inSupportedLocation === 'false') {
-            return { region: finalRegion, status: STATUS_COMING };
-        }
-        return { region: finalRegion, status: STATUS_AVAILABLE };
+        return {
+            region: finalRegion,
+            status: (inSupportedLocation === false || inSupportedLocation === 'false')
+                ? STATUS_COMING
+                : STATUS_AVAILABLE,
+        };
     } catch (error) {
         if (error === 'Not Available') return { region: '', status: STATUS_NOT_AVAILABLE };
         if (error === 'Timeout') return { region: '', status: STATUS_TIMEOUT };
@@ -105,8 +106,7 @@ async function testDisneyPlus() {
 
 async function parseDisney() {
     const { region, status } = await testDisneyPlus();
-    const emoji = region ? countryCodeToEmoji(region) : '';
-    const regionLabel = region ? `，${emoji}${region.toUpperCase()}` : '';
+    const regionLabel = region ? `，${countryCodeToEmoji(region)}${region.toUpperCase()}` : '';
 
     if (status === STATUS_AVAILABLE) return `已解锁${regionLabel}`;
     if (status === STATUS_COMING) return `即将登陆${regionLabel}`;
@@ -120,7 +120,7 @@ async function parseDisney() {
         const content = await parseDisney();
         $done({ content });
     } catch (e) {
-        console.log(`[Error] ${e?.message || JSON.stringify(e)}`);
+        console.log(`[Disney+ Error] ${e?.message || JSON.stringify(e)}`);
         $done({ content: '连接失败' });
     }
 })();
