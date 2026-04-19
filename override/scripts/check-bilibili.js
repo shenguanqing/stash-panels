@@ -26,25 +26,43 @@ function codeToStatus(code) {
     return '连接失败';
 }
 
-async function parseBilibili() {
-    const [hkData, mainlandData] = await Promise.all([
-        fetchJson('https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi'),
-        fetchJson('https://api.bilibili.com/pgc/player/web/playurl?avid=82846771&qn=0&type=&otype=json&ep_id=307247&fourk=1&fnver=0&fnval=16&module=bangumi'),
-    ]);
-
-    const hkCode = typeof hkData?.code === 'number' ? hkData.code : null;
-    const mainlandCode = typeof mainlandData?.code === 'number' ? mainlandData.code : null;
-
-    const hkStatus = hkCode !== null ? codeToStatus(hkCode) : '连接失败';
-    const mainlandStatus = mainlandCode !== null ? codeToStatus(mainlandCode) : '连接失败';
-
-    if (hkStatus === mainlandStatus) return `港澳台 ${hkStatus} / 大陆 ${mainlandStatus}`;
-    return `港澳台 ${hkStatus} / 大陆 ${mainlandStatus}`;
+/**
+ * 检测哔哩哔哩港澳台内容的可用性。
+ * 通过请求一个港澳台限定番剧的播放 URL 接口，根据响应 code 判断。
+ */
+async function checkBilibiliHKMCTW() {
+    const data = await fetchJson(
+        'https://api.bilibili.com/pgc/player/web/playurl?avid=18281381&cid=29892777&qn=0&type=&otype=json&ep_id=183799&fourk=1&fnver=0&fnval=16&module=bangumi'
+    );
+    const code = typeof data?.code === 'number' ? data.code : null;
+    return code !== null ? codeToStatus(code) : '连接失败';
 }
+
+// /**
+//  * 检测哔哩哔哩大陆内容的可用性。
+//  * 通过请求一个大陆限定番剧的播放 URL 接口，根据响应 code 判断。
+//  */
+// async function checkBilibiliMainland() {
+//     const data = await fetchJson(
+//         'https://api.bilibili.com/pgc/player/web/playurl?avid=82846771&qn=0&type=&otype=json&ep_id=307247&fourk=1&fnver=0&fnval=16&module=bangumi'
+//     );
+//     const code = typeof data?.code === 'number' ? data.code : null;
+//     return code !== null ? codeToStatus(code) : '连接失败';
+// }
+
+async function parseBilibiliHKMCTW() {
+    const status = await checkBilibiliHKMCTW();
+    return `${status}`;
+}
+
+// async function parseBilibiliMainland() {
+//     const status = await checkBilibiliMainland();
+//     return `${status}`;
+// }
 
 (async () => {
     try {
-        const content = await parseBilibili();
+        const content = await parseBilibiliHKMCTW();
         $done({ content });
     } catch (e) {
         console.log(`[Bilibili Error] ${e?.message || JSON.stringify(e)}`);
